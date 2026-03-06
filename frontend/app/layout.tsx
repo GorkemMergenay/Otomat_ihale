@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Space_Mono, Sora } from "next/font/google";
 
+import { BackendBanner } from "@/components/BackendBanner";
 import { SidebarNav } from "@/components/SidebarNav";
 import { getOverview } from "@/lib/api";
 import "@/styles/globals.css";
@@ -45,6 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </aside>
           <main className="content">
+            <BackendBanner />
             <div className="content-top">
               <span>Canlı izleme paneli</span>
             </div>

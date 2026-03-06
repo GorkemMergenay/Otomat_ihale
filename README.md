@@ -120,6 +120,18 @@ Not:
 - `NOTIFICATION_EMAIL_RECIPIENTS=...` (boş bırakılırsa aktif admin/analyst kullanıcı e-postaları kullanılır)
 - `NOTIFICATION_SCORE_THRESHOLD=80`
 
+## Vercel (Frontend) ile yayınlama
+
+https://otomat-ihale.vercel.app gibi bir adreste **sadece frontend** çalışır; giriş ve veri için **backend ayrıca yayında olmalı**.
+
+1. Vercel projesinde **Root Directory:** `frontend` yapın.
+2. Backend'i Railway, Render, Fly.io vb. bir yerde deploy edin.
+3. Vercel **Environment Variables** içine ekleyin:
+   - `NEXT_PUBLIC_API_BASE_URL` = `https://BACKEND-ADRESINIZ/api/v1`
+4. Redeploy yapın.
+
+Detay: **`frontend/VERCEL.md`**
+
 ## Docker Setup
 
 ```bash

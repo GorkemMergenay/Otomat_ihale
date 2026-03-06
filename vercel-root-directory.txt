@@ -1,0 +1,5 @@
+Vercel'de bu projeyi deploy ederken Root Directory mutlaka "frontend" olmalı.
+
+Ayarlama: Vercel Dashboard → Proje → Settings → General → Root Directory → Edit → "frontend" yazın → Save → Redeploy.
+
+Aksi halde 404 NOT_FOUND hatası alırsınız.
