@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: tender_tracker_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tender_tracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ..
+      dockerfile: infra/backend.Dockerfile
+    container_name: tender_tracker_backend
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/tender_tracker
+      AUTH_DISABLED: "true"
+      SCHEDULER_ENABLED: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: infra/frontend.Dockerfile
+    container_name: tender_tracker_frontend
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      NEXT_INTERNAL_API_BASE_URL: http://backend:8000/api/v1
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_API_TOKEN: admin-token
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

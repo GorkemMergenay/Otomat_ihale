@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+
+# Node
+node_modules/
+frontend/.next/
+
+# Environment
+.env
+
+# Local data
+collector/snapshots/
+*.sqlite3
+
+# OS
+.DS_Store
