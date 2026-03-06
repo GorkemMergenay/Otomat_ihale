@@ -7,6 +7,7 @@ import json
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Optional, Tuple
 
 from app.core.config import settings
 from app.models.enums import UserRole
@@ -21,7 +22,7 @@ class AccessTokenPayload:
     expires_at: datetime
 
 
-def create_access_token(user_id: int, email: str, role: UserRole) -> tuple[str, datetime]:
+def create_access_token(user_id: int, email: str, role: UserRole) -> Tuple[str, datetime]:
     now = int(time.time())
     expires_at = now + (settings.auth_token_ttl_minutes * 60)
     payload = {
@@ -37,7 +38,7 @@ def create_access_token(user_id: int, email: str, role: UserRole) -> tuple[str, 
     return token, datetime.fromtimestamp(expires_at, tz=timezone.utc)
 
 
-def decode_access_token(token: str) -> AccessTokenPayload | None:
+def decode_access_token(token: str) -> Optional[AccessTokenPayload]:
     try:
         payload_part, signature_part = token.split(".", 1)
         payload_bytes = _from_base64(payload_part)

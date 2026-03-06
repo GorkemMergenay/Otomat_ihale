@@ -6,7 +6,7 @@ APIs or any tender list API that returns JSON.
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 
@@ -23,7 +23,7 @@ def _get_nested(data: dict[str, Any], path: str) -> Any:
     return data
 
 
-def _parse_date(value: Any) -> date | None:
+def _parse_date(value: Any) -> Optional[date]:
     if value is None:
         return None
     if isinstance(value, date):

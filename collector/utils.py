@@ -2,16 +2,17 @@ from __future__ import annotations
 
 import hashlib
 from datetime import date
+from typing import Optional
 
 from classifier.text_utils import normalize_text
 
 
 def build_dedupe_key(
     title: str,
-    institution_name: str | None,
-    publishing_date: date | None,
+    institution_name: Optional[str],
+    publishing_date: Optional[date],
     source_url: str,
-    external_id: str | None,
+    external_id: Optional[str],
     source_name: str,
 ) -> str:
     if external_id:
@@ -28,6 +29,6 @@ def build_dedupe_key(
     return hashlib.sha256(base.encode("utf-8")).hexdigest()
 
 
-def content_checksum(summary: str | None, raw_text: str | None) -> str:
+def content_checksum(summary: Optional[str], raw_text: Optional[str]) -> str:
     content = f"{summary or ''}|{raw_text or ''}"
     return hashlib.sha256(content.encode("utf-8")).hexdigest()

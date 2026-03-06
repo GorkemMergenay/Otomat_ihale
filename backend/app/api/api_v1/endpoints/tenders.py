@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
@@ -20,17 +21,17 @@ router = APIRouter(prefix="/tenders", tags=["tenders"])
 
 @router.get("", response_model=Page[TenderRead])
 def get_tenders(
-    search: str | None = None,
-    city: str | None = None,
-    institution_name: str | None = None,
-    min_score: float | None = Query(default=None, ge=0, le=100),
-    source_name: str | None = None,
-    tender_status: TenderStatus | None = Query(default=None, alias="status"),
-    official_verified: bool | None = None,
-    publish_date_from: date | None = None,
-    publish_date_to: date | None = None,
-    deadline_from: date | None = None,
-    deadline_to: date | None = None,
+    search: Optional[str] = None,
+    city: Optional[str] = None,
+    institution_name: Optional[str] = None,
+    min_score: Optional[float] = Query(default=None, ge=0, le=100),
+    source_name: Optional[str] = None,
+    tender_status: Optional[TenderStatus] = Query(default=None, alias="status"),
+    official_verified: Optional[bool] = None,
+    publish_date_from: Optional[date] = None,
+    publish_date_to: Optional[date] = None,
+    deadline_from: Optional[date] = None,
+    deadline_to: Optional[date] = None,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
     sort_by: str = "deadline_date",

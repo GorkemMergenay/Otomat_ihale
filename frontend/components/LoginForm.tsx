@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { setClientAuthToken } from "@/lib/auth";
 import { getApiBaseCandidates } from "@/lib/api_base";
 
-const API_BASE_CANDIDATES = getApiBaseCandidates();
+// Login için önce kök adres denensin (POST /auth/login); sonra /api/v1
+const LOGIN_BASE_CANDIDATES = [
+  "http://localhost:8000",
+  "http://127.0.0.1:8000",
+  ...getApiBaseCandidates(),
+];
 
 type LoginPayload = {
   access_token: string;
@@ -27,7 +32,7 @@ export function LoginForm({ nextPath = "/" }: { nextPath?: string }) {
     setMessage(null);
 
     const errors: string[] = [];
-    for (const base of API_BASE_CANDIDATES) {
+    for (const base of LOGIN_BASE_CANDIDATES) {
       const url = `${base}/auth/login`;
       try {
         const response = await fetch(url, {
@@ -55,7 +60,11 @@ export function LoginForm({ nextPath = "/" }: { nextPath?: string }) {
       }
     }
 
-    setMessage(`Giriş başarısız. Denenen adresler: ${errors.join(" | ")}`);
+    const is404 = errors.some((e) => e.includes("404"));
+    const hint = is404
+      ? " Backend güncel olmayabilir veya login adresi yanlış. Backend'i yeniden başlatın (proje kökünde: PYTHONPATH=backend:. uvicorn app.main:app --app-dir backend --port 8000)."
+      : "";
+    setMessage(`Giriş başarısız.${hint} Denenen adresler: ${errors.join(" | ")}`);
     setBusy(false);
   };
 

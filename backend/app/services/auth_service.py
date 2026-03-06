@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import Optional, Tuple
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -11,7 +12,7 @@ from app.models.enums import UserRole
 from app.models.user import User
 
 
-def authenticate_user(db: Session, email: str, password: str) -> User | None:
+def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
     normalized_email = email.strip().lower()
     user = db.scalar(select(User).where(func.lower(User.email) == normalized_email))
     if user is None or not user.is_active:
@@ -27,6 +28,6 @@ def authenticate_user(db: Session, email: str, password: str) -> User | None:
     return user
 
 
-def issue_user_access_token(user: User) -> tuple[str, datetime]:
+def issue_user_access_token(user: User) -> Tuple[str, datetime]:
     role = UserRole(user.role)
     return create_access_token(user_id=user.id, email=user.email, role=role)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import urljoin
 
 import httpx
@@ -222,7 +222,7 @@ class IlanGovTrApiCollector(BaseCollector):
         self,
         ad: dict[str, Any],
         detail: dict[str, Any],
-    ) -> NormalizedTenderInput | None:
+    ) -> Optional[NormalizedTenderInput]:
         title = (detail.get("title") or ad.get("title") or "").strip()
         if not title:
             return None
@@ -301,7 +301,7 @@ class IlanGovTrApiCollector(BaseCollector):
         ]
         return normalize_text(" ".join(parts))
 
-    def _parse_date(self, value: str | None) -> date | None:
+    def _parse_date(self, value: Optional[str]) -> Optional[date]:
         if not value:
             return None
         try:

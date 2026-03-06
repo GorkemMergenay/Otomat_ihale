@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { MatchExplanation } from "@/components/MatchExplanation";
 import { ScoreBadge } from "@/components/ScoreBadge";
+import { ScoreBars } from "@/components/ScoreBars";
 import { StatusBadge } from "@/components/StatusBadge";
 import { TenderActions } from "@/components/TenderActions";
 import { ApiRequestError, getTender, getTenderEvents } from "@/lib/api";
@@ -30,9 +33,17 @@ export default async function TenderDetailPage({ params }: { params: { id: strin
 
   const tender = tenderData;
   const events = eventsData;
+  const shortTitle = tender.title.length > 60 ? tender.title.slice(0, 57) + "…" : tender.title;
 
   return (
     <section>
+      <Breadcrumb
+        items={[
+          { href: "/", label: "Genel Bakış" },
+          { href: "/tenders", label: "İhale Listesi" },
+          { label: shortTitle },
+        ]}
+      />
       <header className="page-header">
         <h2>İhale Detayı</h2>
         <p>{tender.title}</p>
@@ -65,22 +76,12 @@ export default async function TenderDetailPage({ params }: { params: { id: strin
 
         <div className="panel">
           <h3>Skor Dağılımı</h3>
-          <div className="score-row">
-            <span>Uygunluk</span>
-            <ScoreBadge value={tender.relevance_score} />
-          </div>
-          <div className="score-row">
-            <span>Ticari</span>
-            <ScoreBadge value={tender.commercial_score} />
-          </div>
-          <div className="score-row">
-            <span>Teknik</span>
-            <ScoreBadge value={tender.technical_score} />
-          </div>
-          <div className="score-row total-row">
-            <span>Toplam</span>
-            <ScoreBadge value={tender.total_score} />
-          </div>
+          <ScoreBars
+            relevance_score={tender.relevance_score}
+            commercial_score={tender.commercial_score}
+            technical_score={tender.technical_score}
+            total_score={tender.total_score}
+          />
           <p className="label-pill">{classificationLabel(tender.classification_label)}</p>
         </div>
 
@@ -98,7 +99,7 @@ export default async function TenderDetailPage({ params }: { params: { id: strin
             )}
           </div>
           <h3>Eşleşme Gerekçesi</h3>
-          <pre>{JSON.stringify(tender.match_explanation, null, 2)}</pre>
+          <MatchExplanation match_explanation={tender.match_explanation} />
         </div>
 
         <div className="panel panel-wide">

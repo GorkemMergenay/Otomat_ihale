@@ -276,6 +276,110 @@ a:hover {
   color: var(--text-muted);
 }
 
+.quick-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.quick-filters-label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-right: 0.25rem;
+}
+
+.quick-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.quick-filter-chip:hover {
+  background: var(--accent-soft);
+  border-color: #bfe5dd;
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+.recent-tenders-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+}
+
+.recent-tenders-list li {
+  border-bottom: 1px solid var(--line);
+}
+
+.recent-tenders-list li:last-child {
+  border-bottom: none;
+}
+
+.recent-tenders-link {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+.recent-tenders-link:hover {
+  background: var(--panel-soft);
+  text-decoration: none;
+  color: inherit;
+}
+
+.recent-tenders-title {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-tenders-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.recent-tenders-date {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.recent-tenders-more {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.recent-tenders-more:hover {
+  text-decoration: underline;
+}
+
+.text-muted {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -505,6 +609,69 @@ tbody tr:hover {
   font-size: 0.9rem;
 }
 
+.table-footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.pagination {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-btn {
+  padding: 0.4rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pagination-btn:hover {
+  background: var(--accent-soft);
+  border-color: #bfe5dd;
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+.pagination-btn-disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: none;
+}
+
+.pagination-info {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.empty-state {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.empty-state-title {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.tender-list-title {
+  font-weight: 500;
+}
+
 .table-subline {
   margin-top: 0.2rem;
   color: var(--text-muted);
@@ -552,6 +719,32 @@ tbody tr:hover {
 .badge-indigo {
   background: #e6eaff;
   color: #35439b;
+}
+
+.health-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.health-badge-ok {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.health-badge-warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.health-badge-error {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .score-high {
@@ -622,6 +815,107 @@ dd {
 .total-row {
   border-top: 1px dashed var(--line);
   padding-top: 0.58rem;
+}
+
+.breadcrumb {
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.breadcrumb-item {
+  display: inline;
+}
+
+.breadcrumb-sep {
+  margin: 0 0.4rem;
+  color: var(--line-strong);
+}
+
+.breadcrumb a {
+  color: var(--accent);
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb-current {
+  color: var(--text-strong);
+  font-weight: 500;
+}
+
+.score-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.score-bar-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 2rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.score-bar-label {
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.score-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+.score-bar-value {
+  font-family: var(--font-space-mono), monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.match-explanation {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.match-explanation-block h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  font-family: var(--font-sora), sans-serif;
+}
+
+.match-explanation-block ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.match-explanation-block li {
+  margin-bottom: 0.3rem;
+  font-size: 0.88rem;
+}
+
+.match-explanation-positive { color: var(--success); }
+.match-explanation-negative { color: var(--danger); }
+.match-explanation-components { color: var(--text); }
+.match-field, .match-weight, .match-score {
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
+.match-explanation-raw {
+  margin: 0;
+  font-size: 0.74rem;
 }
 
 .label-pill {

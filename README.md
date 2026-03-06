@@ -17,10 +17,10 @@ Production-oriented MVP to monitor Turkish tender opportunities relevant to vend
 
 ## Monorepo Structure
 - `backend/` FastAPI app, SQLAlchemy models, migrations, endpoints, scheduler
-- `collector/` source adapter framework, parsers, normalizers, runner
+- `collector/` source adapter framework, parsers, normalizers, runner (ilan.gov.tr, RSS, JSON API, generic HTML)
 - `classifier/` rule-based scorer + AI placeholder interface
 - `notifier/` notification dispatch and channel senders
-- `frontend/` Next.js admin dashboard
+- `frontend/` Next.js admin dashboard (genel bakış, ihale listesi sayfalama, detay skor çubukları ve eşleşme gerekçesi, kaynak sağlık rozeti)
 - `infra/` Dockerfiles and compose
 - `scripts/` operational scripts (`seed_data.py`)
 - `tests/` API and scoring tests
@@ -50,19 +50,48 @@ Production-oriented MVP to monitor Turkish tender opportunities relevant to vend
 - `ignored`
 - `archived`
 
-## Backend Setup (Local)
+## Gereksinimler (yerel çalıştırma)
+- **Python 3.9+** (proje Python 3.9 uyumlu hale getirildi)
+- **Node.js 18+** ve npm (frontend için)
+- Veritabanı: **PostgreSQL** (Docker ile) veya **SQLite** (`.env` içinde `DATABASE_URL=sqlite:///dev.db`)
+
+## Hızlı başlangıç (yerel, Docker yok)
+
+1. **.env** — Proje kökünde `.env` yoksa: `cp .env.example .env`  
+   - PostgreSQL kullanmayacaksanız: `.env` içinde `DATABASE_URL=sqlite:///dev.db` olsun.
+
+2. **Backend** (ayrı terminal):
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate   # Windows: .venv\Scripts\activate
+   pip install -r backend/requirements.txt   # PostgreSQL yoksa psycopg2-binary hatası alırsanız: pip install (diğer paketler)
+   PYTHONPATH=backend:. python -m alembic -c backend/alembic.ini upgrade head   # backend/ içinden çalıştırıyorsanız: cd backend && DATABASE_URL=sqlite:///../dev.db python -m alembic upgrade head
+   PYTHONPATH=backend:. python scripts/seed_data.py
+   ./scripts/run_backend.sh
+   ```
+   Veya doğrudan: `PYTHONPATH=backend:. uvicorn app.main:app --reload --app-dir backend`  
+   Backend: **http://localhost:8000**
+
+3. **Frontend** (ayrı terminal):
+   ```bash
+   ./scripts/run_frontend.sh
+   ```
+   Veya: `cd frontend && npm install && npm run dev`  
+   Frontend: **http://localhost:3000**
+
+4. **Giriş:** `admin@otomat.local` / `Otomat123!`
+
+## Backend Setup (Local) — detay
 
 ```bash
-cd /Users/gorkemmergenay/Documents/New project 2
+cd /path/to/project
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
 cp .env.example .env
-export PYTHONPATH=/Users/gorkemmergenay/Documents/New\ project\ 2/backend:/Users/gorkemmergenay/Documents/New\ project\ 2
-cd backend
-alembic upgrade head
-cd ..
-python scripts/seed_data.py
+export PYTHONPATH=backend:.
+cd backend && DATABASE_URL=sqlite:///../dev.db python -m alembic upgrade head && cd ..
+PYTHONPATH=backend:. python scripts/seed_data.py
 uvicorn app.main:app --reload --app-dir backend
 ```
 
@@ -71,7 +100,7 @@ Backend URL: `http://localhost:8000`
 ## Frontend Setup (Local)
 
 ```bash
-cd /Users/gorkemmergenay/Documents/New project 2/frontend
+cd frontend
 npm install
 npm run dev
 ```
@@ -113,7 +142,7 @@ PYTHONPATH=/Users/gorkemmergenay/Documents/New\ project\ 2/backend:/Users/gorkem
 
 Seeds:
 - users
-- source configs (`ilan.gov.tr` resmi kaynak + ek RSS araştırma/sinyal kaynakları aktif)
+- source configs: `ilan.gov.tr` resmi API, Google/Bing News RSS (otomat, kiosk, mikro market, belediye ihaleleri vb.), EKAP/KIK JSON API şablonu, generic HTML şablonları (EKAP, DHMİ, TCDD, İBB, Ankara, KIK, üniversite, sağlık)
 - keyword rules (direct/related/commercial/institution/negative)
 - collector runs that ingest real official listings when available
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -11,7 +12,7 @@ from notifier.service import NotificationManager
 
 logger = logging.getLogger(__name__)
 
-scheduler: BackgroundScheduler | None = None
+scheduler: Optional[BackgroundScheduler] = None
 
 
 def run_scheduled_crawl() -> None:

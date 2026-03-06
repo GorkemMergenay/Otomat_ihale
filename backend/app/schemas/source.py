@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -22,20 +22,20 @@ class SourceConfigCreate(SourceConfigBase):
 
 
 class SourceConfigUpdate(BaseModel):
-    name: str | None = None
-    base_url: str | None = None
-    is_active: bool | None = None
-    crawl_frequency: str | None = None
-    config_json: dict[str, Any] | None = None
+    name: Optional[str] = None
+    base_url: Optional[str] = None
+    is_active: Optional[bool] = None
+    crawl_frequency: Optional[str] = None
+    config_json: Optional[dict] = None
 
 
 class SourceConfigRead(SourceConfigBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    last_run_at: datetime | None
-    last_success_at: datetime | None
-    last_failure_at: datetime | None
-    last_error: str | None
+    last_run_at: Optional[datetime]
+    last_success_at: Optional[datetime]
+    last_failure_at: Optional[datetime]
+    last_error: Optional[str]
     created_at: datetime
     updated_at: datetime

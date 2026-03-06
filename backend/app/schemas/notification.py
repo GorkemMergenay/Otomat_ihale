@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -12,12 +12,12 @@ class NotificationRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    tender_id: int | None
+    tender_id: Optional[int]
     channel: NotificationChannel
     recipient: str
     notification_type: NotificationType
     delivery_status: DeliveryStatus
-    payload: dict[str, Any]
+    payload: dict
     idempotency_key: str
-    error_message: str | None
+    error_message: Optional[str]
     created_at: datetime

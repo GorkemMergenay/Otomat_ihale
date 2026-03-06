@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -12,10 +12,10 @@ class TenderDocumentRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    document_type: str | None
+    document_type: Optional[str]
     document_url: str
-    local_path: str | None
-    checksum: str | None
+    local_path: Optional[str]
+    checksum: Optional[str]
     created_at: datetime
 
 
@@ -28,18 +28,18 @@ class TenderRead(BaseModel):
     source_type: SourceType
     source_name: str
     source_url: str
-    external_id: str | None
-    publishing_date: date | None
-    deadline_date: date | None
-    tender_date: date | None
-    institution_name: str | None
-    city: str | None
-    region: str | None
-    tender_type: str | None
-    summary: str | None
-    raw_text: str | None
-    extracted_keywords: list[str]
-    match_explanation: dict[str, Any]
+    external_id: Optional[str]
+    publishing_date: Optional[date]
+    deadline_date: Optional[date]
+    tender_date: Optional[date]
+    institution_name: Optional[str]
+    city: Optional[str]
+    region: Optional[str]
+    tender_type: Optional[str]
+    summary: Optional[str]
+    raw_text: Optional[str]
+    extracted_keywords: List[str]
+    match_explanation: Dict[str, Any]
     relevance_score: float
     commercial_score: float
     technical_score: float
@@ -48,36 +48,36 @@ class TenderRead(BaseModel):
     official_verified: bool
     signal_found: bool
     status: TenderStatus
-    assigned_to: int | None
-    notes: str | None
+    assigned_to: Optional[int]
+    notes: Optional[str]
     dedupe_key: str
-    content_checksum: str | None
-    parser_version: str | None
-    last_scored_at: datetime | None
-    documents: list[TenderDocumentRead] = Field(default_factory=list)
+    content_checksum: Optional[str]
+    parser_version: Optional[str]
+    last_scored_at: Optional[datetime]
+    documents: List[TenderDocumentRead] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
 
 
 class TenderUpdate(BaseModel):
-    status: TenderStatus | None = None
-    notes: str | None = None
-    assigned_to: int | None = None
-    official_verified: bool | None = None
+    status: Optional[TenderStatus] = None
+    notes: Optional[str] = None
+    assigned_to: Optional[int] = None
+    official_verified: Optional[bool] = None
 
 
 class TenderListFilters(BaseModel):
-    search: str | None = None
-    city: str | None = None
-    institution_name: str | None = None
-    min_score: float | None = Field(default=None, ge=0, le=100)
-    source_name: str | None = None
-    status: TenderStatus | None = None
-    official_verified: bool | None = None
-    publish_date_from: date | None = None
-    publish_date_to: date | None = None
-    deadline_from: date | None = None
-    deadline_to: date | None = None
+    search: Optional[str] = None
+    city: Optional[str] = None
+    institution_name: Optional[str] = None
+    min_score: Optional[float] = Field(default=None, ge=0, le=100)
+    source_name: Optional[str] = None
+    status: Optional[TenderStatus] = None
+    official_verified: Optional[bool] = None
+    publish_date_from: Optional[date] = None
+    publish_date_to: Optional[date] = None
+    deadline_from: Optional[date] = None
+    deadline_to: Optional[date] = None
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=20, ge=1, le=100)
     sort_by: str = "deadline_date"
@@ -90,5 +90,5 @@ class TenderEventRead(BaseModel):
     id: int
     tender_id: int
     event_type: str
-    event_data: dict[str, Any]
+    event_data: Dict[str, Any]
     created_at: datetime

@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.api_v1.endpoints import auth as auth_endpoints
 from app.api.api_v1.router import api_router
 from app.core.config import settings
 from app.core.logging import configure_logging
@@ -49,6 +50,11 @@ for fallback_prefix in ("/api/v1", "/api"):
 
 for prefix in api_prefixes:
     app.include_router(api_router, prefix=prefix)
+
+# Login'in kesin bulunması için auth router'ı doğrudan da mount et (prefix olmadan: POST /auth/login)
+app.include_router(auth_endpoints.router, prefix="/api/v1")
+app.include_router(auth_endpoints.router, prefix="/api")
+app.include_router(auth_endpoints.router)  # POST http://localhost:8000/auth/login
 
 
 @app.get("/")

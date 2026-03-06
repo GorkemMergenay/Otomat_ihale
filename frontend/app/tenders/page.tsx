@@ -4,6 +4,7 @@ import { ScoreBadge } from "@/components/ScoreBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { statusLabel } from "@/lib/labels";
 import { getTenders } from "@/lib/api";
+import { TenderListPagination } from "./TenderListPagination";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,9 @@ export default async function TenderListPage({
   ];
   const query = queryFromSearchParams(searchParams);
   const response = await getTenders(query);
+  const currentPage = response.page;
+  const pageSize = response.page_size;
+  const totalPages = Math.max(1, Math.ceil(response.total / pageSize));
 
   return (
     <section>
@@ -78,47 +82,72 @@ export default async function TenderListPage({
           <option value="total_score">Toplam Skor</option>
           <option value="publishing_date">Yayın Tarihi</option>
         </select>
+        <select name="page_size" defaultValue={(searchParams.page_size as string) || "25"}>
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+        </select>
+        <input type="hidden" name="page" value="1" />
         <button type="submit">Listele</button>
       </form>
 
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Başlık</th>
-              <th>Kurum</th>
-              <th>Şehir</th>
-              <th>Skor</th>
-              <th>Durum</th>
-              <th>Kaynak</th>
-              <th>Son Tarih</th>
-            </tr>
-          </thead>
-          <tbody>
-            {response.items.map((item) => (
-              <tr key={item.id}>
-                <td>
-                  <Link href={`/tenders/${item.id}`}>{item.title}</Link>
-                </td>
-                <td>{item.institution_name || "-"}</td>
-                <td>{item.city || "-"}</td>
-                <td>
-                  <ScoreBadge value={item.total_score} />
-                </td>
-                <td>
-                  <StatusBadge value={item.status} />
-                </td>
-                <td>{item.source_name}</td>
-                <td>{item.deadline_date || "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {response.items.length === 0 ? (
+        <div className="empty-state">
+          <p className="empty-state-title">İhale bulunamadı</p>
+          <p className="text-muted">Filtreleri gevşetin veya kaynak taraması çalıştırın.</p>
+          <Link href="/tenders" className="quick-filter-chip">Filtreleri temizle</Link>
+        </div>
+      ) : (
+        <>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Başlık</th>
+                  <th>Kurum</th>
+                  <th>Şehir</th>
+                  <th>Skor</th>
+                  <th>Durum</th>
+                  <th>Kaynak</th>
+                  <th>Son Tarih</th>
+                </tr>
+              </thead>
+              <tbody>
+                {response.items.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <Link href={`/tenders/${item.id}`} className="tender-list-title">{item.title}</Link>
+                    </td>
+                    <td>{item.institution_name || "-"}</td>
+                    <td>{item.city || "-"}</td>
+                    <td>
+                      <ScoreBadge value={item.total_score} />
+                    </td>
+                    <td>
+                      <StatusBadge value={item.status} />
+                    </td>
+                    <td>{item.source_name}</td>
+                    <td>{item.deadline_date || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      <p className="table-footer">
-        Toplam: {response.total} | Sayfa: {response.page} | Sayfa boyutu: {response.page_size}
-      </p>
+          <div className="table-footer-row">
+            <p className="table-footer">
+              Toplam: {response.total} | Sayfa: {response.page} / {totalPages} | Sayfa boyutu: {response.page_size}
+            </p>
+            <TenderListPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              total={response.total}
+              pageSize={pageSize}
+              searchParams={searchParams}
+            />
+          </div>
+        </>
+      )}
     </section>
   );
 }

@@ -16,6 +16,8 @@ frontend/.next/
 # Local data
 collector/snapshots/
 *.sqlite3
+dev.db
+test.db
 
 # OS
 .DS_Store

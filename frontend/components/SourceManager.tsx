@@ -7,6 +7,23 @@ import { getApiBase } from "@/lib/api_base";
 import { sourceTypeLabel } from "@/lib/labels";
 import type { SourceConfig } from "@/lib/types";
 
+function sourceHealth(source: SourceConfig): "ok" | "warn" | "error" {
+  const hasError = !!source.last_error;
+  const lastSuccess = source.last_success_at ? new Date(source.last_success_at).getTime() : 0;
+  const lastFailure = source.last_failure_at ? new Date(source.last_failure_at).getTime() : 0;
+  const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
+  if (hasError && lastFailure >= dayAgo) return "error";
+  if (source.last_failure_at && lastFailure >= dayAgo && lastFailure > lastSuccess) return "warn";
+  if (source.last_run_at && !source.last_success_at && source.last_failure_at) return "warn";
+  return "ok";
+}
+
+function HealthBadge({ source }: { source: SourceConfig }) {
+  const h = sourceHealth(source);
+  const label = h === "ok" ? "OK" : h === "warn" ? "Uyarı" : "Hata";
+  return <span className={`health-badge health-badge-${h}`}>{label}</span>;
+}
+
 const API_BASE = getApiBase();
 
 function authHeaders(extra: Record<string, string> = {}) {
@@ -47,6 +64,7 @@ export function SourceManager({ initialSources }: { initialSources: SourceConfig
       <table>
         <thead>
           <tr>
+            <th>Sağlık</th>
             <th>Kaynak</th>
             <th>Tip</th>
             <th>Adapter</th>
@@ -62,6 +80,9 @@ export function SourceManager({ initialSources }: { initialSources: SourceConfig
         <tbody>
           {sources.map((source) => (
             <tr key={source.id}>
+              <td>
+                <HealthBadge source={source} />
+              </td>
               <td>
                 <strong>{source.name}</strong>
                 <div className="table-subline">{source.base_url}</div>

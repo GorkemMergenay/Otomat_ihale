@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -22,13 +23,13 @@ class KeywordRuleCreate(KeywordRuleBase):
 
 
 class KeywordRuleUpdate(BaseModel):
-    keyword: str | None = None
-    category: str | None = None
-    weight: float | None = None
-    is_active: bool | None = None
-    is_negative: bool | None = None
-    matching_type: MatchingType | None = None
-    target_field: str | None = None
+    keyword: Optional[str] = None
+    category: Optional[str] = None
+    weight: Optional[float] = None
+    is_active: Optional[bool] = None
+    is_negative: Optional[bool] = None
+    matching_type: Optional[MatchingType] = None
+    target_field: Optional[str] = None
 
 
 class KeywordRuleRead(KeywordRuleBase):

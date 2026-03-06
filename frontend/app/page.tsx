@@ -1,5 +1,7 @@
+import { QuickFilters } from "@/components/QuickFilters";
+import { RecentTenders } from "@/components/RecentTenders";
 import { StatCard } from "@/components/StatCard";
-import { getOverview } from "@/lib/api";
+import { getOverview, getTenders } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +13,10 @@ function toDateInputValue(date: Date): string {
 }
 
 export default async function DashboardPage() {
-  const overview = await getOverview();
+  const [overview, recentPage] = await Promise.all([
+    getOverview(),
+    getTenders("?sort_by=publishing_date&sort_order=desc&page_size=5"),
+  ]);
   const today = new Date();
   const sevenDaysLater = new Date(today);
   sevenDaysLater.setDate(today.getDate() + 7);
@@ -25,6 +30,7 @@ export default async function DashboardPage() {
         <h2>Genel Durum</h2>
         <p>Otomat ve self servis satış fırsatlarını operasyonel olarak takip edin.</p>
       </header>
+      <QuickFilters />
       <div className="stat-grid">
         <StatCard label="Toplam İhale" value={overview.total_tenders} href="/tenders" />
         <StatCard
@@ -54,6 +60,7 @@ export default async function DashboardPage() {
         <StatCard label="Aktif Kaynak" value={overview.active_sources} href="/sources" />
         <StatCard label="24s Kaynak Hatası" value={overview.source_failures_last_24h} tone="warn" href="/sources" />
       </div>
+      <RecentTenders items={recentPage.items} />
     </section>
   );
 }

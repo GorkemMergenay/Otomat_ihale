@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
@@ -18,7 +19,7 @@ bearer = HTTPBearer(auto_error=False)
 
 @dataclass
 class CurrentUser:
-    id: int | None
+    id: Optional[int]
     email: str
     role: UserRole
 
@@ -31,7 +32,7 @@ TOKEN_ROLE_MAP = {
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer),
     db: Session = Depends(get_db),
 ) -> CurrentUser:
     if settings.auth_disabled and credentials is None:

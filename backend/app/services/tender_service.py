@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import date, timedelta
+from typing import List, Optional, Tuple
 
 from sqlalchemy import asc, desc, func, or_, select
 from sqlalchemy.orm import Session
@@ -25,7 +26,7 @@ def non_mock_tender_condition():
     return or_(Tender.parser_version.is_(None), ~Tender.parser_version.like("mock-%"))
 
 
-def list_tenders(db: Session, filters: TenderListFilters) -> tuple[list[Tender], int]:
+def list_tenders(db: Session, filters: TenderListFilters) -> Tuple[List[Tender], int]:
     query = select(Tender).where(non_mock_tender_condition())
 
     if filters.search:
@@ -79,7 +80,7 @@ def list_tenders(db: Session, filters: TenderListFilters) -> tuple[list[Tender],
     return items, total
 
 
-def get_tender(db: Session, tender_id: int) -> Tender | None:
+def get_tender(db: Session, tender_id: int) -> Optional[Tender]:
     return db.scalar(
         select(Tender)
         .where(Tender.id == tender_id)

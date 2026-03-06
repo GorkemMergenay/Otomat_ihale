@@ -5,7 +5,7 @@
 The MVP is implemented as a modular monorepo with clear service boundaries:
 
 - `backend/` FastAPI application for REST API, business workflow, role-based access control, signed token auth, persistence, scheduler orchestration, and admin operations.
-- `collector/` Pluggable source collection framework. Adapters fetch source data, parsers extract content, normalizers output canonical tender payloads.
+- `collector/` Pluggable source collection framework. Adapters: ilan.gov.tr API, RSS/Atom, JSON API (EKAP/KIK-style), generic HTML. Parsers extract content, normalizers output canonical tender payloads.
 - `classifier/` Rule-based relevance/classification and explainable scoring engine with interface ready for AI model integration.
 - `notifier/` Channel abstraction for outbound notifications (email + Telegram), with de-duplication and cool-down checks.
 - `frontend/` Next.js admin dashboard for team operations (overview, list/detail, source/rule management, notification log).

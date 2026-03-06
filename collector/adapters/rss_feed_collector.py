@@ -4,6 +4,7 @@ from datetime import date, datetime
 from email.utils import parsedate_to_datetime
 from urllib.parse import urlparse
 import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Optional
 
 import httpx
 
@@ -28,8 +29,8 @@ class RssFeedCollector(BaseCollector):
         max_items = int(cfg.get("max_items", 60))
         timeout = float(cfg.get("timeout_seconds", 20))
 
-        raw_snapshots: list[str] = []
-        items: list[NormalizedTenderInput] = []
+        raw_snapshots: List[str] = []
+        items: List[NormalizedTenderInput] = []
 
         with httpx.Client(timeout=timeout, follow_redirects=True) as client:
             for feed_url in feed_urls:
@@ -71,13 +72,13 @@ class RssFeedCollector(BaseCollector):
         snapshot = "\n\n".join(raw_snapshots) if raw_snapshots else None
         return CollectorOutput(items=items, parser_version=self.parser_version, raw_snapshot=snapshot)
 
-    def _parse_feed(self, xml: str) -> list[dict[str, str | date | None]]:
+    def _parse_feed(self, xml: str) -> List[Dict[str, Any]]:
         try:
             root = ET.fromstring(xml)
         except ET.ParseError:
             return []
 
-        rows: list[dict[str, str | date | None]] = []
+        rows: List[Dict[str, Any]] = []
         nodes = [node for node in root.iter() if self._tag_name(node.tag) == "item"]
         if not nodes:
             nodes = [node for node in root.iter() if self._tag_name(node.tag) == "entry"]
@@ -107,7 +108,7 @@ class RssFeedCollector(BaseCollector):
             )
         return rows
 
-    def _node_text(self, node: ET.Element, tag_name: str) -> str | None:
+    def _node_text(self, node: ET.Element, tag_name: str) -> Optional[str]:
         for child in node:
             if self._tag_name(child.tag) != tag_name:
                 continue
@@ -116,7 +117,7 @@ class RssFeedCollector(BaseCollector):
                 return text
         return None
 
-    def _link_from_node(self, node: ET.Element) -> str | None:
+    def _link_from_node(self, node: ET.Element) -> Optional[str]:
         for child in node:
             if self._tag_name(child.tag) != "link":
                 continue
@@ -135,7 +136,7 @@ class RssFeedCollector(BaseCollector):
             return tag.split("}", 1)[1].lower()
         return tag.lower()
 
-    def _parse_date(self, value: str | None) -> date | None:
+    def _parse_date(self, value: Optional[str]) -> Optional[date]:
         if not value:
             return None
         try:
@@ -148,7 +149,7 @@ class RssFeedCollector(BaseCollector):
         except ValueError:
             return None
 
-    def _institution_from_link(self, link: str) -> str | None:
+    def _institution_from_link(self, link: str) -> Optional[str]:
         if not link:
             return None
         host = (urlparse(link).hostname or "").strip().lower()
