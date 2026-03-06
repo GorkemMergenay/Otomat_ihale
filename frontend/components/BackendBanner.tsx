@@ -18,24 +18,9 @@ export function BackendBanner() {
   if (!show) return null;
 
   return (
-    <div
-      className="backend-banner"
-      role="alert"
-      style={{
-        padding: "0.75rem 1rem",
-        background: "linear-gradient(90deg, #fef3c7 0%, #fde68a 100%)",
-        border: "1px solid #f59e0b",
-        borderRadius: "12px",
-        marginBottom: "1rem",
-        fontSize: "0.9rem",
-        color: "#92400e",
-      }}
-    >
+    <div className="backend-banner" role="alert">
       <strong>Backend bağlı değil.</strong> Bu adres (Vercel) sadece arayüzü sunar. Giriş ve veri
-      için backend&apos;i yayına alıp Vercel ortam değişkenine{" "}
-      <code style={{ background: "rgba(0,0,0,0.06)", padding: "0.1em 0.4em", borderRadius: "4px" }}>
-        NEXT_PUBLIC_API_BASE_URL
-      </code>{" "}
+      için backend&apos;i yayına alıp Vercel ortam değişkenine <code>NEXT_PUBLIC_API_BASE_URL</code>{" "}
       ekleyin. Detay: <code>frontend/VERCEL.md</code>
     </div>
   );

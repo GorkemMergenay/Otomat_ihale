@@ -71,7 +71,7 @@ export function LoginForm({ nextPath = "/" }: { nextPath?: string }) {
   return (
     <form className="login-form" onSubmit={submit}>
       <h2>Oturum Aç</h2>
-      <p>İhale takip paneline erişmek için kullanıcı hesabınızla giriş yapın.</p>
+      <p>Kamu ihale radarı paneline giriş yapın. Tüm ihaleler ve skorlar tek ekranda.</p>
       <label>
         E-posta
         <input

@@ -9,22 +9,23 @@ from app.models.collector_run import CollectorRun
 from app.models.enums import ClassificationLabel, CollectorRunStatus
 from app.models.source_config import SourceConfig
 from app.models.tender import Tender
-from app.services.tender_service import non_mock_tender_condition, upcoming_deadline_count
+from app.services.tender_service import active_tender_condition, upcoming_deadline_count
 
 
 def get_overview(db: Session) -> dict[str, int]:
     today = date.today()
     day_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     last_24h = datetime.now(timezone.utc) - timedelta(hours=24)
+    active_condition = active_tender_condition(today)
 
     total_tenders = db.scalar(
-        select(func.count()).select_from(Tender).where(non_mock_tender_condition())
+        select(func.count()).select_from(Tender).where(active_condition)
     ) or 0
     newly_found_today = (
         db.scalar(
             select(func.count())
             .select_from(Tender)
-            .where(non_mock_tender_condition())
+            .where(active_condition)
             .where(Tender.created_at >= day_start)
         )
         or 0
@@ -33,7 +34,7 @@ def get_overview(db: Session) -> dict[str, int]:
         db.scalar(
             select(func.count())
             .select_from(Tender)
-            .where(non_mock_tender_condition())
+            .where(active_condition)
             .where(Tender.classification_label == ClassificationLabel.HIGHLY_RELEVANT.value)
         )
         or 0
@@ -42,7 +43,7 @@ def get_overview(db: Session) -> dict[str, int]:
         db.scalar(
             select(func.count())
             .select_from(Tender)
-            .where(non_mock_tender_condition())
+            .where(active_condition)
             .where(Tender.official_verified.is_(True))
         )
         or 0

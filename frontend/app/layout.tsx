@@ -47,10 +47,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </aside>
           <main className="content">
             <BackendBanner />
-            <div className="content-top">
-              <span>Canlı izleme paneli</span>
+            <div className="content-top" aria-hidden>
+              Canlı panel
             </div>
-            {children}
+            <div className="content-inner">
+              {children}
+            </div>
           </main>
         </div>
       </body>

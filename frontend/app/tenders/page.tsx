@@ -18,8 +18,10 @@ function queryFromSearchParams(searchParams: Record<string, string | string[] | 
       params.set(key, value);
     }
   }
-  const asString = params.toString();
-  return asString ? `?${asString}` : "";
+  if (!params.has("active_only")) params.set("active_only", "true");
+  if (!params.has("sort_by")) params.set("sort_by", "total_score");
+  if (!params.has("sort_order")) params.set("sort_order", "desc");
+  return `?${params.toString()}`;
 }
 
 export default async function TenderListPage({
@@ -47,10 +49,26 @@ export default async function TenderListPage({
     <section>
       <header className="page-header">
         <h2>İhale Listesi</h2>
-        <p>Skor, kaynak ve durum bazlı hızlı tarama.</p>
+        <p>
+          Varsayılan olarak sadece son tarihi geçmemiş ihaleler gösterilir. Tarihi geçenler otomatik arşivlenir.
+        </p>
       </header>
 
       <form className="filter-row" method="get">
+        <label className="filter-checkbox">
+          <input
+            type="hidden"
+            name="active_only"
+            value="false"
+          />
+          <input
+            type="checkbox"
+            name="active_only"
+            value="true"
+            defaultChecked={(searchParams.active_only as string) !== "false"}
+          />
+          Sadece geçerli ihaleler
+        </label>
         <input name="search" placeholder="Ara (başlık/kurum)" defaultValue={(searchParams.search as string) || ""} />
         <input name="city" placeholder="Şehir" defaultValue={(searchParams.city as string) || ""} />
         <input
@@ -77,10 +95,14 @@ export default async function TenderListPage({
           <option value="true">Doğrulandı</option>
           <option value="false">Sinyal</option>
         </select>
-        <select name="sort_by" defaultValue={(searchParams.sort_by as string) || "deadline_date"}>
-          <option value="deadline_date">Son Tarih</option>
-          <option value="total_score">Toplam Skor</option>
-          <option value="publishing_date">Yayın Tarihi</option>
+        <select name="sort_by" defaultValue={(searchParams.sort_by as string) || "total_score"}>
+          <option value="total_score">En alakalı (skor)</option>
+          <option value="deadline_date">Son başvuru tarihi</option>
+          <option value="publishing_date">Yayın tarihi</option>
+        </select>
+        <select name="sort_order" defaultValue={(searchParams.sort_order as string) || "desc"}>
+          <option value="desc">Azalan (önce yüksek/geç)</option>
+          <option value="asc">Artan (önce düşük/erken)</option>
         </select>
         <select name="page_size" defaultValue={(searchParams.page_size as string) || "25"}>
           <option value="10">10</option>

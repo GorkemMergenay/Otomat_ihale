@@ -15,7 +15,7 @@ function toDateInputValue(date: Date): string {
 export default async function DashboardPage() {
   const [overview, recentPage] = await Promise.all([
     getOverview(),
-    getTenders("?sort_by=publishing_date&sort_order=desc&page_size=5"),
+    getTenders("?active_only=true&sort_by=publishing_date&sort_order=desc&page_size=5"),
   ]);
   const today = new Date();
   const sevenDaysLater = new Date(today);
@@ -28,11 +28,11 @@ export default async function DashboardPage() {
     <section>
       <header className="page-header">
         <h2>Genel Durum</h2>
-        <p>Otomat ve self servis satış fırsatlarını operasyonel olarak takip edin.</p>
+        <p>Otomat ve self servis ihale fırsatlarını tek ekrandan takip edin. En alakalı ihaleler öne çıkar.</p>
       </header>
       <QuickFilters />
       <div className="stat-grid">
-        <StatCard label="Toplam İhale" value={overview.total_tenders} href="/tenders" />
+        <StatCard label="Geçerli İhale" value={overview.total_tenders} href="/tenders" />
         <StatCard
           label="Bugün Yeni"
           value={overview.newly_found_today}

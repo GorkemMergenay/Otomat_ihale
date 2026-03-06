@@ -4,7 +4,7 @@ import enum
 from datetime import date, timedelta
 from typing import List, Optional, Tuple
 
-from sqlalchemy import asc, desc, func, or_, select
+from sqlalchemy import and_, asc, desc, func, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.models.enums import TenderStatus
@@ -24,6 +24,17 @@ SORTABLE_FIELDS = {
 
 def non_mock_tender_condition():
     return or_(Tender.parser_version.is_(None), ~Tender.parser_version.like("mock-%"))
+
+
+def active_tender_condition(today: Optional[date] = None):
+    """Sadece son tarihi geçmemiş ve arşivlenmemiş ihaleler."""
+    if today is None:
+        today = date.today()
+    return and_(
+        non_mock_tender_condition(),
+        Tender.status != TenderStatus.ARCHIVED.value,
+        or_(Tender.deadline_date.is_(None), Tender.deadline_date >= today),
+    )
 
 
 def list_tenders(db: Session, filters: TenderListFilters) -> Tuple[List[Tender], int]:
@@ -68,6 +79,12 @@ def list_tenders(db: Session, filters: TenderListFilters) -> Tuple[List[Tender],
 
     if filters.deadline_to:
         query = query.where(Tender.deadline_date <= filters.deadline_to)
+
+    if filters.active_only:
+        today = date.today()
+        query = query.where(Tender.status != TenderStatus.ARCHIVED.value).where(
+            or_(Tender.deadline_date.is_(None), Tender.deadline_date >= today)
+        )
 
     count_query = select(func.count()).select_from(query.subquery())
     total = db.scalar(count_query) or 0
@@ -142,10 +159,26 @@ def upcoming_deadline_count(db: Session, today: date, within_days: int = 7) -> i
         db.scalar(
             select(func.count())
             .select_from(Tender)
-            .where(non_mock_tender_condition())
+            .where(active_tender_condition(today))
             .where(Tender.deadline_date.is_not(None))
-            .where(Tender.deadline_date >= today)
             .where(Tender.deadline_date <= max_date)
         )
         or 0
     )
+
+
+def archive_expired_tenders(db: Session) -> int:
+    """Son tarihi geçmiş ihaleleri arşivler. Arşivlenen kayıt sayısını döner."""
+    today = date.today()
+    result = (
+        db.execute(
+            update(Tender)
+            .where(non_mock_tender_condition())
+            .where(Tender.status != TenderStatus.ARCHIVED.value)
+            .where(Tender.deadline_date.is_not(None))
+            .where(Tender.deadline_date < today)
+            .values(status=TenderStatus.ARCHIVED.value)
+        )
+    )
+    db.commit()
+    return result.rowcount or 0

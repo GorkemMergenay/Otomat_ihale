@@ -78,10 +78,11 @@ class TenderListFilters(BaseModel):
     publish_date_to: Optional[date] = None
     deadline_from: Optional[date] = None
     deadline_to: Optional[date] = None
+    active_only: bool = Field(default=True, description="Sadece son tarihi geçmemiş ihaleler")
     page: int = Field(default=1, ge=1)
     page_size: int = Field(default=20, ge=1, le=100)
-    sort_by: str = "deadline_date"
-    sort_order: str = "asc"
+    sort_by: str = "total_score"
+    sort_order: str = "desc"
 
 
 class TenderEventRead(BaseModel):
