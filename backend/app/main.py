@@ -12,7 +12,11 @@ from app.core.config import settings
 from app.core.logging import configure_logging
 from app.db.session import SessionLocal
 from app.services.data_hygiene_service import purge_mock_tenders
-from app.services.tender_service import archive_expired_tenders, fill_missing_dates_from_text
+from app.services.tender_service import (
+    archive_expired_tenders,
+    delete_tenders_past_tender_date,
+    fill_missing_dates_from_text,
+)
 from app.workers.scheduler import start_scheduler, stop_scheduler
 
 configure_logging()
@@ -33,6 +37,9 @@ async def lifespan(_: FastAPI):
         archived = archive_expired_tenders(db)
         if archived:
             logger.info("Başlangıçta tarihi geçmiş ihaleler arşivlendi", extra={"archived_count": archived})
+        deleted = delete_tenders_past_tender_date(db)
+        if deleted:
+            logger.info("İhale günü geçen kayıtlar silindi", extra={"deleted_count": deleted})
     finally:
         db.close()
 

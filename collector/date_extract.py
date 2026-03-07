@@ -22,6 +22,12 @@ DEADLINE_KEYWORDS = re.compile(
     re.IGNORECASE,
 )
 
+# İhale günü / açılış tarihi (ihalenin yapılacağı gün)
+TENDER_DATE_KEYWORDS = re.compile(
+    r"(?:ihale\s+tarihi|ihale\s+günü|açılış\s+tarihi|teklif\s+açılış|açılış\s+günü|ihale\s+tarih)\s*[:\s]*(\d{1,2}[./]\d{1,2}[./]\d{2,4}|\d{4}-\d{2}-\d{2})",
+    re.IGNORECASE,
+)
+
 def _parse_flexible_date(s: str) -> Optional[date]:
     """Tek bir tarih string'ini parse et."""
     s = s.strip()
@@ -85,6 +91,23 @@ def extract_deadline_from_text(text: Optional[str]) -> Optional[date]:
                 return d
             if d:
                 return d
+    return None
+
+
+def extract_tender_date_from_text(text: Optional[str]) -> Optional[date]:
+    """
+    Metinden ihale gününü (ihalenin yapılacağı tarih) çıkarır.
+    'İhale tarihi', 'açılış tarihi', 'ihale günü' vb. ifadeleri arar.
+    """
+    if not text or not text.strip():
+        return None
+    text = " " + text + " "
+    match = TENDER_DATE_KEYWORDS.search(text)
+    if match:
+        raw = match.group(1).strip()
+        d = _parse_flexible_date(raw)
+        if d:
+            return d
     return None
 
 

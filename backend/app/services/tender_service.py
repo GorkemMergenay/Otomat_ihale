@@ -4,7 +4,7 @@ import enum
 from datetime import date, datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
-from sqlalchemy import and_, asc, desc, func, or_, select, update
+from sqlalchemy import and_, asc, delete, desc, func, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -28,13 +28,25 @@ def non_mock_tender_condition():
 
 
 def active_tender_condition(today: Optional[date] = None):
-    """Sadece son tarihi geçmemiş ve arşivlenmemiş ihaleler."""
+    """Canlı ihale: arşivde değil, son tarihi ileride veya tarihsiz ama son N günde yayın/kayıt."""
     if today is None:
         today = date.today()
+    after_days = max(1, getattr(settings, "archive_no_deadline_after_days", 30))
+    cutoff_date = today - timedelta(days=after_days)
+    cutoff_dt = datetime(cutoff_date.year, cutoff_date.month, cutoff_date.day, 0, 0, 0, tzinfo=timezone.utc)
     return and_(
         non_mock_tender_condition(),
         Tender.status != TenderStatus.ARCHIVED.value,
-        or_(Tender.deadline_date.is_(None), Tender.deadline_date >= today),
+        or_(
+            and_(Tender.deadline_date.is_not(None), Tender.deadline_date >= today),
+            and_(
+                Tender.deadline_date.is_(None),
+                or_(
+                    and_(Tender.publishing_date.is_not(None), Tender.publishing_date >= cutoff_date),
+                    and_(Tender.publishing_date.is_(None), Tender.created_at >= cutoff_dt),
+                ),
+            ),
+        ),
     )
 
 
@@ -82,10 +94,7 @@ def list_tenders(db: Session, filters: TenderListFilters) -> Tuple[List[Tender],
         query = query.where(Tender.deadline_date <= filters.deadline_to)
 
     if filters.active_only:
-        today = date.today()
-        query = query.where(Tender.status != TenderStatus.ARCHIVED.value).where(
-            or_(Tender.deadline_date.is_(None), Tender.deadline_date >= today)
-        )
+        query = query.where(active_tender_condition())
 
     count_query = select(func.count()).select_from(query.subquery())
     total = db.scalar(count_query) or 0
@@ -219,13 +228,38 @@ def archive_expired_tenders(db: Session) -> int:
     return (r1.rowcount or 0) + (r2.rowcount or 0) + (r3.rowcount or 0)
 
 
+def delete_tenders_past_tender_date(db: Session) -> int:
+    """
+    İhale günü (tender_date) geçmiş kayıtları veritabanından siler.
+    Config'de delete_tenders_after_tender_date=True ise çalışır.
+    Silinen kayıt sayısını döner.
+    """
+    if not getattr(settings, "delete_tenders_after_tender_date", True):
+        return 0
+    today = date.today()
+    stmt = (
+        delete(Tender)
+        .where(non_mock_tender_condition())
+        .where(Tender.tender_date.is_not(None))
+        .where(Tender.tender_date < today)
+    )
+    result = db.execute(stmt)
+    db.commit()
+    return result.rowcount or 0
+
+
 def fill_missing_dates_from_text(db: Session) -> int:
     """
     Tarihi eksik ihalelerin raw_text/title/summary alanlarından tarih çıkarıp günceller.
+    İhale günü (tender_date) yoksa metinden veya son başvuru tarihinden doldurulur.
     Güncellenen kayıt sayısını döner.
     """
     try:
-        from collector.date_extract import extract_any_date_from_text, extract_deadline_from_text
+        from collector.date_extract import (
+            extract_any_date_from_text,
+            extract_deadline_from_text,
+            extract_tender_date_from_text,
+        )
     except ImportError:
         return 0
 
@@ -233,7 +267,13 @@ def fill_missing_dates_from_text(db: Session) -> int:
         select(Tender)
         .where(non_mock_tender_condition())
         .where(Tender.status != TenderStatus.ARCHIVED.value)
-        .where(or_(Tender.deadline_date.is_(None), Tender.publishing_date.is_(None)))
+        .where(
+            or_(
+                Tender.deadline_date.is_(None),
+                Tender.publishing_date.is_(None),
+                Tender.tender_date.is_(None),
+            )
+        )
     ).all()
 
     updated = 0
@@ -251,6 +291,14 @@ def fill_missing_dates_from_text(db: Session) -> int:
             pub = extract_any_date_from_text(text)
             if pub:
                 t.publishing_date = pub
+                changed = True
+        if not t.tender_date:
+            td = extract_tender_date_from_text(text)
+            if td:
+                t.tender_date = td
+                changed = True
+            elif t.deadline_date:
+                t.tender_date = t.deadline_date
                 changed = True
         if changed:
             db.add(t)

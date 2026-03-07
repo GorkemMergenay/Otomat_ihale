@@ -49,6 +49,8 @@ class Settings(BaseSettings):
     notification_cooldown_minutes: int = 120
     deadline_warning_days: str = "14,7,3"
     archive_no_deadline_after_days: int = 30
+    # İhale günü (tender_date) geçen kayıtları veritabanından sil (True ise)
+    delete_tenders_after_tender_date: bool = True
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

@@ -8,7 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.services.collector_service import trigger_manual_crawl_for_all
-from app.services.tender_service import archive_expired_tenders
+from app.services.tender_service import archive_expired_tenders, delete_tenders_past_tender_date
 from notifier.service import NotificationManager
 
 logger = logging.getLogger(__name__)
@@ -22,6 +22,9 @@ def run_scheduled_crawl() -> None:
         archived = archive_expired_tenders(db)
         if archived:
             logger.info("Expired tenders archived", extra={"archived_count": archived})
+        deleted = delete_tenders_past_tender_date(db)
+        if deleted:
+            logger.info("Tenders past tender_date deleted", extra={"deleted_count": deleted})
         triggered = trigger_manual_crawl_for_all(db)
         deadline_notifications = NotificationManager(db).scan_deadline_notifications()
         logger.info("Scheduled crawl completed", extra={"triggered_sources": triggered})
