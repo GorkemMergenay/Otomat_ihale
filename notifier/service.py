@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.enums import DeliveryStatus, NotificationChannel, NotificationType
 from app.models.notification import Notification
+from app.models.notification_subscriber import NotificationSubscriber
 from app.models.tender import Tender
 from app.models.user import User
 from notifier.channels.email_sender import EmailSender
@@ -200,12 +201,22 @@ class NotificationManager:
         return key
 
     def _email_recipients(self) -> list[str]:
-        if not settings.notification_email_recipients:
-            rows = self.db.scalars(
+        recipients: list[str] = []
+        if settings.notification_email_recipients:
+            recipients.extend(x.strip() for x in settings.notification_email_recipients.split(",") if x.strip())
+        rows = self.db.scalars(
+            select(NotificationSubscriber.email)
+            .where(NotificationSubscriber.is_active.is_(True))
+        ).all()
+        for email in rows:
+            if email and email.strip() and email.strip() not in recipients:
+                recipients.append(email.strip())
+        if not recipients:
+            fallback = self.db.scalars(
                 select(User.email).where(User.is_active.is_(True)).where(User.role.in_(["admin", "analyst"]))
             ).all()
-            return [email.strip() for email in rows if email and email.strip()]
-        return [x.strip() for x in settings.notification_email_recipients.split(",") if x.strip()]
+            recipients = [e.strip() for e in fallback if e and e.strip()]
+        return recipients
 
     def _render_message(self, tender: Tender, intro: str) -> str:
         deadline = tender.deadline_date.isoformat() if tender.deadline_date else "belirtilmedi"

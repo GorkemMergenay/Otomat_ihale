@@ -19,9 +19,10 @@ class EmailSender(NotificationSender):
         email.set_content(message)
 
         try:
-            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as smtp:
-                if settings.smtp_username:
+            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as smtp:
+                if getattr(settings, "smtp_use_tls", False) or settings.smtp_port == 587:
                     smtp.starttls()
+                if settings.smtp_username:
                     smtp.login(settings.smtp_username, settings.smtp_password)
                 smtp.send_message(email)
             return True, None

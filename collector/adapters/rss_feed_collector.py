@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 import httpx
 
 from collector.base import BaseCollector
+from collector.date_extract import extract_deadline_from_text, extract_any_date_from_text
 from collector.types import CollectorOutput, NormalizedTenderInput
 
 
@@ -47,6 +48,12 @@ class RssFeedCollector(BaseCollector):
                     summary = entry.get("summary")
                     link = entry.get("link") or str(feed_url)
                     published = entry.get("publishing_date")
+                    raw_text = f"{title} {summary or ''}".strip()
+                    deadline = extract_deadline_from_text(raw_text)
+                    if not published and raw_text:
+                        pub = extract_any_date_from_text(raw_text)
+                        if pub:
+                            published = pub
 
                     items.append(
                         NormalizedTenderInput(
@@ -56,8 +63,9 @@ class RssFeedCollector(BaseCollector):
                             source_url=link,
                             external_id=entry.get("external_id"),
                             publishing_date=published,
+                            deadline_date=deadline,
                             summary=summary,
-                            raw_text=f"{title} {summary or ''}".strip(),
+                            raw_text=raw_text,
                             institution_name=self._institution_from_link(link),
                             official_verified=self.source_config.source_type == "official",
                             signal_found=self.source_config.source_type != "official",

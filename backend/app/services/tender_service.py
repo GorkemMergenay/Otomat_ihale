@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import enum
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
 from sqlalchemy import and_, asc, desc, func, or_, select, update
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.models.enums import TenderStatus
 from app.models.tender import Tender
 from app.models.tender_event import TenderEvent
@@ -168,17 +169,92 @@ def upcoming_deadline_count(db: Session, today: date, within_days: int = 7) -> i
 
 
 def archive_expired_tenders(db: Session) -> int:
-    """Son tarihi geçmiş ihaleleri arşivler. Arşivlenen kayıt sayısını döner."""
+    """
+    Son tarihi geçmiş veya çok eski (tarihsiz) ihaleleri arşivler.
+    - deadline_date < bugün -> arşivle
+    - deadline_date yok, publishing_date < (bugün - archive_no_deadline_after_days) -> arşivle
+    - deadline_date ve publishing_date yok, created_at çok eski -> arşivle
+    """
     today = date.today()
-    result = (
-        db.execute(
-            update(Tender)
-            .where(non_mock_tender_condition())
-            .where(Tender.status != TenderStatus.ARCHIVED.value)
-            .where(Tender.deadline_date.is_not(None))
-            .where(Tender.deadline_date < today)
-            .values(status=TenderStatus.ARCHIVED.value)
-        )
+    after_days = max(1, getattr(settings, "archive_no_deadline_after_days", 60))
+    cutoff_date = today - timedelta(days=after_days)
+    cutoff_dt = datetime(cutoff_date.year, cutoff_date.month, cutoff_date.day, 0, 0, 0, tzinfo=timezone.utc)
+
+    # 1) Son tarihi geçmiş olanlar
+    q1 = (
+        update(Tender)
+        .where(non_mock_tender_condition())
+        .where(Tender.status != TenderStatus.ARCHIVED.value)
+        .where(Tender.deadline_date.is_not(None))
+        .where(Tender.deadline_date < today)
+        .values(status=TenderStatus.ARCHIVED.value)
     )
+    r1 = db.execute(q1)
+
+    # 2) Son tarihi yok ama yayın tarihi çok eski
+    q2 = (
+        update(Tender)
+        .where(non_mock_tender_condition())
+        .where(Tender.status != TenderStatus.ARCHIVED.value)
+        .where(Tender.deadline_date.is_(None))
+        .where(Tender.publishing_date.is_not(None))
+        .where(Tender.publishing_date < cutoff_date)
+        .values(status=TenderStatus.ARCHIVED.value)
+    )
+    r2 = db.execute(q2)
+
+    # 3) Ne son tarihi ne yayın tarihi var; kayıt tarihi çok eski
+    q3 = (
+        update(Tender)
+        .where(non_mock_tender_condition())
+        .where(Tender.status != TenderStatus.ARCHIVED.value)
+        .where(Tender.deadline_date.is_(None))
+        .where(Tender.publishing_date.is_(None))
+        .where(Tender.created_at < cutoff_dt)
+        .values(status=TenderStatus.ARCHIVED.value)
+    )
+    r3 = db.execute(q3)
+
     db.commit()
-    return result.rowcount or 0
+    return (r1.rowcount or 0) + (r2.rowcount or 0) + (r3.rowcount or 0)
+
+
+def fill_missing_dates_from_text(db: Session) -> int:
+    """
+    Tarihi eksik ihalelerin raw_text/title/summary alanlarından tarih çıkarıp günceller.
+    Güncellenen kayıt sayısını döner.
+    """
+    try:
+        from collector.date_extract import extract_any_date_from_text, extract_deadline_from_text
+    except ImportError:
+        return 0
+
+    tenders = db.scalars(
+        select(Tender)
+        .where(non_mock_tender_condition())
+        .where(Tender.status != TenderStatus.ARCHIVED.value)
+        .where(or_(Tender.deadline_date.is_(None), Tender.publishing_date.is_(None)))
+    ).all()
+
+    updated = 0
+    for t in tenders:
+        text = " ".join(filter(None, [t.title, t.summary, t.raw_text]))
+        if not text.strip():
+            continue
+        changed = False
+        if not t.deadline_date:
+            deadline = extract_deadline_from_text(text)
+            if deadline:
+                t.deadline_date = deadline
+                changed = True
+        if not t.publishing_date:
+            pub = extract_any_date_from_text(text)
+            if pub:
+                t.publishing_date = pub
+                changed = True
+        if changed:
+            db.add(t)
+            updated += 1
+    if updated:
+        db.commit()
+    return updated

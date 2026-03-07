@@ -1,21 +1,31 @@
-import { getNotifications } from "@/lib/api";
+import { getNotificationSubscribers, getNotifications } from "@/lib/api";
 import {
   deliveryStatusLabel,
   notificationChannelLabel,
   notificationTypeLabel,
 } from "@/lib/labels";
 
+import { EmailSubscriberManager } from "@/components/EmailSubscriberManager";
+
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {
-  const notifications = await getNotifications();
+  const [notifications, subscribers] = await Promise.all([
+    getNotifications(),
+    getNotificationSubscribers(),
+  ]);
 
   return (
     <section>
       <header className="page-header">
-        <h2>Bildirim Kayıtları</h2>
-        <p>Gönderilen, bekleyen ve hatalı bildirim kayıtları.</p>
+        <h2>Bildirimler</h2>
+        <p>Eşleşme bildirimi e-posta adresleri ve gönderim kayıtları.</p>
       </header>
+
+      <EmailSubscriberManager initialSubscribers={subscribers} />
+
+      <h3 style={{ marginTop: "1.5rem", marginBottom: "0.5rem", fontSize: "1rem", fontWeight: 600 }}>Bildirim Kayıtları</h3>
+      <p className="text-muted" style={{ marginBottom: "0.75rem" }}>Gönderilen, bekleyen ve hatalı bildirim kayıtları.</p>
 
       <div className="table-wrap">
         <table>

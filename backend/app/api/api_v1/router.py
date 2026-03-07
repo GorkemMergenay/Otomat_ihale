@@ -8,6 +8,7 @@ from app.api.api_v1.endpoints import (
     dashboard,
     health,
     keyword_rules,
+    notification_subscribers,
     notifications,
     sources,
     tenders,
@@ -21,4 +22,5 @@ api_router.include_router(tenders.router)
 api_router.include_router(sources.router)
 api_router.include_router(keyword_rules.router)
 api_router.include_router(notifications.router)
+api_router.include_router(notification_subscribers.router)
 api_router.include_router(actions.router)

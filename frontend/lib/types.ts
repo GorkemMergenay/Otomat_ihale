@@ -83,6 +83,14 @@ export type NotificationRecord = {
   error_message: string | null;
 };
 
+export type NotificationSubscriber = {
+  id: number;
+  email: string;
+  label: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
 export type TenderEvent = {
   id: number;
   event_type: string;

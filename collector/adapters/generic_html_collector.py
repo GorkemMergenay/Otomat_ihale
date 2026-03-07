@@ -7,6 +7,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from collector.base import BaseCollector
+from collector.date_extract import extract_deadline_from_text, extract_any_date_from_text
 from collector.types import CollectorOutput, NormalizedTenderInput
 
 
@@ -61,6 +62,19 @@ class GenericHtmlCollector(BaseCollector):
                 if summary_node:
                     summary = summary_node.get_text(" ", strip=True)
 
+            raw_text = f"{title} {summary or ''}"
+            deadline = extract_deadline_from_text(raw_text)
+            publishing_date = extract_any_date_from_text(raw_text) or date.today()
+            date_selector = cfg.get("date_selector")
+            if date_selector:
+                date_node = node.select_one(date_selector)
+                if date_node:
+                    raw_date = date_node.get_text(" ", strip=True)
+                    if raw_date:
+                        publishing_date = extract_any_date_from_text(raw_date) or publishing_date
+                        if not deadline:
+                            deadline = extract_deadline_from_text(raw_date)
+
             source_url = urljoin(self.source_config.base_url, href)
             items.append(
                 NormalizedTenderInput(
@@ -68,9 +82,10 @@ class GenericHtmlCollector(BaseCollector):
                     source_type=self.source_config.source_type,
                     source_name=self.source_config.name,
                     source_url=source_url,
-                    publishing_date=date.today(),
+                    publishing_date=publishing_date,
+                    deadline_date=deadline,
                     summary=summary,
-                    raw_text=f"{title} {summary or ''}",
+                    raw_text=raw_text,
                     official_verified=self.source_config.source_type == "official",
                     signal_found=self.source_config.source_type != "official",
                     parser_version=self.parser_version,

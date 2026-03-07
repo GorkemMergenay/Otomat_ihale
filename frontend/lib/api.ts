@@ -2,6 +2,7 @@ import {
   DashboardOverview,
   KeywordRule,
   NotificationRecord,
+  NotificationSubscriber,
   SourceConfig,
   Tender,
   TenderEvent,
@@ -80,4 +81,8 @@ export async function getKeywordRules(): Promise<KeywordRule[]> {
 
 export async function getNotifications(): Promise<NotificationRecord[]> {
   return apiGet<NotificationRecord[]>("/notifications?page=1&page_size=100");
+}
+
+export async function getNotificationSubscribers(): Promise<NotificationSubscriber[]> {
+  return apiGet<NotificationSubscriber[]>("/notification-subscribers");
 }

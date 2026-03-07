@@ -1,4 +1,14 @@
-from . import actions, auth, dashboard, health, keyword_rules, notifications, sources, tenders
+from . import (
+    actions,
+    auth,
+    dashboard,
+    health,
+    keyword_rules,
+    notification_subscribers,
+    notifications,
+    sources,
+    tenders,
+)
 
 __all__ = [
     "actions",
@@ -6,6 +16,7 @@ __all__ = [
     "dashboard",
     "health",
     "keyword_rules",
+    "notification_subscribers",
     "notifications",
     "sources",
     "tenders",
