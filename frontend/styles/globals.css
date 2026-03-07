@@ -716,6 +716,15 @@ nav {
   cursor: not-allowed;
 }
 
+.archive-tender-btn {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--text-secondary);
+}
+.archive-tender-btn:hover:not(:disabled) {
+  background: var(--text-primary);
+}
+
 .inline-input {
   width: 140px;
 }

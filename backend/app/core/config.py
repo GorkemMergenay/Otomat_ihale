@@ -48,7 +48,7 @@ class Settings(BaseSettings):
 
     notification_cooldown_minutes: int = 120
     deadline_warning_days: str = "14,7,3"
-    archive_no_deadline_after_days: int = 60
+    archive_no_deadline_after_days: int = 30
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

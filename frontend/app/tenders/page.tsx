@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ArchiveTenderButton } from "@/components/ArchiveTenderButton";
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { statusLabel } from "@/lib/labels";
@@ -132,6 +133,7 @@ export default async function TenderListPage({
                   <th>Durum</th>
                   <th>Kaynak</th>
                   <th>Son Tarih</th>
+                  <th aria-label="İşlem" />
                 </tr>
               </thead>
               <tbody>
@@ -150,6 +152,9 @@ export default async function TenderListPage({
                     </td>
                     <td>{item.source_name}</td>
                     <td>{item.deadline_date || "-"}</td>
+                    <td>
+                      <ArchiveTenderButton tenderId={item.id} />
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_user, require_admin
+from app.core.security import get_current_user, require_admin, require_analyst
 from app.db.session import get_db
 from app.models.enums import TenderStatus
 from app.models.tender_event import TenderEvent
@@ -90,7 +90,7 @@ def get_tender_events(
 def patch_tender(
     tender_id: int,
     payload: TenderUpdate,
-    _: object = Depends(require_admin),
+    _: object = Depends(require_analyst),
     db: Session = Depends(get_db),
 ) -> TenderRead:
     tender = get_tender(db, tender_id)

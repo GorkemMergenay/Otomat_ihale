@@ -66,3 +66,10 @@ def require_admin(user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
     if user.role != UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yönetici rolü gerekir")
     return user
+
+
+def require_analyst(user: CurrentUser = Depends(get_current_user)) -> CurrentUser:
+    """Admin veya analist; ihale durumu güncelleme (arşivleme vb.) için yeterli."""
+    if user.role not in (UserRole.ADMIN, UserRole.ANALYST):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu işlem için yönetici veya analist rolü gerekir")
+    return user
